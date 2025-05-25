@@ -1,6 +1,6 @@
 ER-LOM和LH-LOM程序使用说明
 
-程序安装
+一、程序安装
 
 1、上传程序的ERLOM_web.exe和LHLOM_web.exe为不含运行MATLAB Runtime运行环境版本。
 
@@ -8,9 +8,129 @@ ER-LOM和LH-LOM程序使用说明
 
 3、若用户电脑未安装运行环境，程序将自动下载对应版本运行环境——MATLAB Runtime2024b版本，用户可自定义MATLAB Runtime2024b运行环境的安装位置，自动下载后继续安装即可。
 
-4、若用户已经安装相关运行环境，则不需要额外下载，安装程序将自动进入下一步安装界面。
+4、若用户已经安装相关运行环境，则不需要额外下载，安装程序将自动进入下一步安装界面，继续安装完成即可。
 
-脚本说明
+5、程序使用：双击快捷方式或用户自定义安装位置的程序打开，在程序左侧参数输入区，输入相关参数，选择相关方法——BV、M、MG，点击相关按钮，即可计算、列表并绘图，在启动程序路径下，会自动生成一个Excel文件，文件中包含相关参数和计算结果。
+
+二、程序文件.mlapp后缀文件说明——以ERLOM.mlapp为例说明
+
+1、程序文件为MATLAB Appdesigner专属文件，需安装MATLAB软件，启动后双击文件，即可打开。
+
+2、文件中包含两部分内容，分别为设计视图和代码视图。
+
+3、设计视图为程序的界面，可自由添加组件，调整程序界面。
+
+4、代码视图为组件对应的代码，要实现相关功能，需要对对应组件添加对应的回调函数。
+
+三、回调函数相关代码说明——以MATLAB打开ERLOM.mlapp文件后，在代码视图可见相关代码
+
+1、构建Excel文件，填入相关的标题行，规定参数、自变量、计算结果的位置，方便后期执行脚本计算后，相关数据的填入。
+
+    %% 创建ERLOM数据输出Excel表格文件
+    filename = 'ERLOM.xlsx';  % 指定要删除的文件名 
+    if exist("ERLOM.xlsx", 'file') == 2 % 检查文件是否存在 
+        delete(filename); % 删除文件 
+    end 
+    % 创建空白表格
+    file = 'ERLOM.xlsx'; 
+    A = []; B = []; C =[]; D = [];
+    writematrix(A,file,"Sheet",'Sheet1');
+    writematrix(B,file,"Sheet",'Sheet2');
+    writematrix(C,file,"Sheet",'Sheet3');
+    writematrix(D,file,"Sheet",'Sheet4');
+    % 标题行和相关参数
+    TitleRow1 = {'参数','数值','单位','η','k1','k-1','k2','k-2','k3','k-3','k4','k-4',...
+                'Θ-OMV','Θ-OMOH','ΘOMO','ΘOMOOH','r1','r2','r3','r4','log(r)'};
+    TitleRow2 = {'参数','数值','单位','pH','k1','k-1','k2','k-2','k3','k-3','k4','k-4',...
+                'Θ-OMV','Θ-OMOH','ΘOMO','ΘOMOOH','r1','r2','r3','r4','log(r)'};
+    CanShuNameOP = {'kBT/h','kBT','T','f','Ea0','γ','β','pH','ΔG1','ΔG2','ΔG3','ΔG4',...
+                'λ1','λ2','λ3','λ4'}';
+    CanShuNamepH = {'kBT/h','kBT','T','f','Ea0','γ','β','η','ΔG1','ΔG2','ΔG3','ΔG4',...
+                'λ1','λ2','λ3','λ4'}';
+    CanShuData = [6220889369003.16;0.0256925694830201;298.15;38.9217590969594];
+    CanShuUnit = {'s-1','eV','K','V-1','eV','','','','eV','eV','eV','eV','eV','eV','eV','eV'}';
+    % 写入随η变化表格参数
+    writecell(TitleRow1,file,"Sheet",1,'Range','A1');
+    writecell(CanShuNameOP,file,"Sheet",1,'Range','A2');
+    writematrix(CanShuData,file,"Sheet",1,'Range','B2');
+    writecell(CanShuUnit,file,"Sheet",1,'Range','C2');
+    % 写入随pH变化表格参数
+    writecell(TitleRow2,file,"Sheet",3,'Range','A1');
+    writecell(CanShuNamepH,file,"Sheet",3,'Range','A2');
+    writematrix(CanShuData,file,"Sheet",3,'Range','B2');
+    writecell(CanShuUnit,file,"Sheet",3,'Range','C2');
+
+2、获取用户输入的参数值，并将相关参数填入Excel文件中的对应位置，方便执行脚本时，脚本可自动获取对应单元格的参数。
+
+    %% 获取参数，填入表格对应位置
+    filename = 'ERLOM.xlsx';
+    yita = (app.OPdown.Value:app.OPstep.Value:app.OPup.Value)';
+    pH = (app.pHdown.Value:app.pHstep.Value:app.pHup.Value)';
+    writematrix(app.G1EditField.Value,filename,'Sheet',1, 'Range', 'B10');
+    writematrix(app.G2EditField.Value,filename,'Sheet',1, 'Range', 'B11');
+    writematrix(app.G3EditField.Value,filename,'Sheet',1, 'Range', 'B12');
+    writematrix(app.G4EditField.Value,filename,'Sheet',1, 'Range', 'B13');
+    writematrix(app.G1EditField.Value,filename,'Sheet',3, 'Range', 'B10');
+    writematrix(app.G2EditField.Value,filename,'Sheet',3, 'Range', 'B11');
+    writematrix(app.G3EditField.Value,filename,'Sheet',3, 'Range', 'B12');
+    writematrix(app.G4EditField.Value,filename,'Sheet',3, 'Range', 'B13');
+    writematrix(yita,filename,'Sheet', 1, 'Range', 'D2');
+    writematrix(pH,filename,'Sheet', 3, 'Range', 'D2');
+    writematrix(app.pHding.Value,filename,'Sheet',1, 'Range', 'B9');
+    writematrix(app.yitading.Value,filename,'Sheet',3, 'Range', 'B9');
+    writematrix(app.Ea0.Value,filename,'Sheet', 1 , 'Range', 'B6');
+    writematrix(app.gama.Value,filename,'Sheet', 1 , 'Range', 'B7');
+    writematrix(app.beita.Value,filename,'Sheet', 1 , 'Range', 'B8');
+    writematrix(app.Ea0.Value,filename,'Sheet', 3 , 'Range', 'B6');
+    writematrix(app.gama.Value,filename,'Sheet', 3 , 'Range', 'B7');
+    writematrix(app.beita.Value,filename,'Sheet', 3 , 'Range', 'B8');
+
+3、运行脚本，脚本运行成功后，自动获取Excel表格中计算后的数据，并将数据填入UI界面的表格组件中，并让图组件自动获取相关数据，剔除不合理数据并自动绘图。
+
+    run("ERLOM_BV.m");
+    t1 = readtable("ERLOM.xlsx",'VariableNamingRule', 'preserve',"Sheet",1,"Range",'D:U');
+    t2 = readtable("ERLOM.xlsx",'VariableNamingRule', 'preserve',"Sheet",3,"Range",'D:U');
+    app.tableOP.Data = t1;
+    app.tablepH.Data = t2
+    % 获取η数据作为x轴
+    x1 = table2array(t1(:,1));
+    % 获取log(r)作为y轴
+    y1 = table2array(t1(:,18));
+    % 获取pH数据作为x轴
+    x2 = table2array(t2(:,1));
+    % 获取log(r)作为y轴
+    y2 = table2array(t2(:,18));
+    % 获取覆盖度数值作为y轴
+    y3 = table2array(t1(:,10));y4 = table2array(t1(:,11));y5 = table2array(t1(:,12));
+    y6 = table2array(t1(:,13));y7 = table2array(t2(:,10));y8 = table2array(t2(:,11));
+    y9 = table2array(t2(:,12));y10 = table2array(t2(:,13));
+    % 清除异常数据 
+    y1max = 200;y2max = 200;
+    valid_indices1 = y1 < y1max; valid_indices2 = y2 < y2max; % 生成逻辑索引 
+    x1_clean = x1(valid_indices1);
+    y1_clean = y1(valid_indices1);
+    x2_clean = x2(valid_indices2);
+    y2_clean = y2(valid_indices2);
+    % 清除坐标轴并绘制过电势η图形 
+    cla(app.picOP);
+    plot(app.picOP, x1_clean, y1_clean);
+    cla(app.picOPc);
+    plot(app.picOPc,x1,y3,'r',x1,y4,'b',x1,y5,'g',x1,y6,'y');
+    % 清除坐标轴并绘制酸碱度pH图形 
+    cla(app.picpH);
+    plot(app.picpH, x2_clean, y2_clean);
+    cla(app.picpHc);
+    plot(app.picpHc,x2,y7,'r',x2,y8,'b',x2,y9,'g',x2,y10,'y');
+    % 添加图例 
+    legend(app.picOPc,'θOMV', 'θOMOH', 'θOMO', 'θOMOOH');
+    legend(app.picpHc,'θOMV', 'θOMOH', 'θOMO', 'θOMOOH');
+    % 添加坐标轴标签 
+    app.picOP.XLabel.String = 'η';app.picOP.YLabel.String = 'log(r)';app.picOP.Title.String = 'η-log(r)';
+    app.picOPc.XLabel.String = 'η';app.picOPc.YLabel.String = 'θ';app.picOPc.Title.String = 'η-θ';
+    app.picpH.XLabel.String = 'pH';app.picpH.YLabel.String = 'log(r)';app.picpH.Title.String = 'pH-log(r)';
+    app.picpHc.XLabel.String = 'pH';app.picpHc.YLabel.String = 'θ';app.picpHc.Title.String = 'pH-θ';
+
+四、脚本文件.m后缀文件说明
 
 脚本文件对应程序中的相关按钮，例如 ERLOM_BV.m 脚本文件对应 ERLOM.exe 中的BV按钮，点击相关按钮后，程序自动运行相关脚本，实现脚本功能，因此共有脚本.m文件六个。
 
